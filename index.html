@@ -1,0 +1,1778 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SignatureCraft — Generador de Firmas para Outlook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* =============================================
+   SIGNATURECRAFT — DESIGN SYSTEM
+   ============================================= */
+:root {
+  --bg: #0a0b0f;
+  --bg2: #111318;
+  --bg3: #1a1d26;
+  --border: #252836;
+  --border2: #2f3347;
+  --accent: #3b82f6;
+  --accent2: #6366f1;
+  --accent-glow: rgba(59,130,246,0.15);
+  --text: #f0f2ff;
+  --text2: #8b93b3;
+  --text3: #555e7a;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  --shadow-lg: 0 8px 48px rgba(0,0,0,0.6);
+  --font-head: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* ——— BACKGROUND GRAIN & MESH ——— */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% -10%, rgba(59,130,246,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 110%, rgba(99,102,241,0.06) 0%, transparent 55%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ——— HEADER ——— */
+.header {
+  position: relative;
+  z-index: 10;
+  padding: 20px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  background: rgba(10,11,15,0.85);
+  backdrop-filter: blur(20px);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-head);
+  font-weight: 800;
+  font-size: 20px;
+  color: var(--text);
+  letter-spacing: -0.5px;
+}
+
+.logo-icon {
+  width: 34px;
+  height: 34px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.logo span { color: var(--accent); }
+
+.header-actions { display: flex; gap: 10px; align-items: center; }
+
+.badge {
+  background: var(--accent-glow);
+  border: 1px solid rgba(59,130,246,0.3);
+  color: var(--accent);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* ——— HERO ——— */
+.hero {
+  position: relative;
+  z-index: 5;
+  text-align: center;
+  padding: 60px 40px 40px;
+}
+
+.hero h1 {
+  font-family: var(--font-head);
+  font-weight: 800;
+  font-size: clamp(32px, 5vw, 52px);
+  letter-spacing: -2px;
+  line-height: 1.1;
+  background: linear-gradient(135deg, #ffffff 30%, #8b93b3 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 16px;
+}
+
+.hero h1 em {
+  font-style: normal;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero p {
+  color: var(--text2);
+  font-size: 17px;
+  max-width: 500px;
+  margin: 0 auto 28px;
+  font-weight: 300;
+}
+
+.template-pills {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.pill {
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--border2);
+  background: var(--bg3);
+  color: var(--text2);
+  transition: all 0.2s;
+  letter-spacing: 0.3px;
+}
+
+.pill:hover, .pill.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+/* ——— MAIN LAYOUT ——— */
+.app-layout {
+  position: relative;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  gap: 0;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px 60px;
+  align-items: start;
+}
+
+/* ——— PANEL ——— */
+.panel {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  position: sticky;
+  top: 24px;
+}
+
+.panel-header {
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(26,29,38,0.5);
+}
+
+.panel-title {
+  font-family: var(--font-head);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text2);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.panel-body { padding: 20px; max-height: calc(100vh - 200px); overflow-y: auto; }
+.panel-body::-webkit-scrollbar { width: 4px; }
+.panel-body::-webkit-scrollbar-track { background: transparent; }
+.panel-body::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+/* ——— FORM SECTIONS ——— */
+.section {
+  margin-bottom: 24px;
+}
+
+.section-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text3);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.field { margin-bottom: 10px; }
+
+.field label {
+  display: block;
+  font-size: 11px;
+  color: var(--text3);
+  font-weight: 600;
+  margin-bottom: 5px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.field input, .field select {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.field input:focus, .field select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.field input::placeholder { color: var(--text3); }
+
+/* ——— COLOR PICKERS ——— */
+.color-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.color-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+}
+
+.color-field input[type="color"] {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.color-field input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+.color-field input[type="color"]::-webkit-color-swatch { border: none; border-radius: 50%; }
+
+.color-label {
+  font-size: 11px;
+  color: var(--text2);
+  flex: 1;
+}
+
+.color-hex {
+  font-size: 10px;
+  font-family: monospace;
+  color: var(--text3);
+}
+
+/* ——— IMAGE UPLOAD ——— */
+.drop-zone {
+  border: 2px dashed var(--border2);
+  border-radius: var(--radius);
+  padding: 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  background: rgba(59,130,246,0.02);
+  position: relative;
+}
+
+.drop-zone:hover, .drop-zone.dragover {
+  border-color: var(--accent);
+  background: var(--accent-glow);
+}
+
+.drop-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+.drop-icon {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px;
+  font-size: 20px;
+}
+
+.drop-text { font-size: 13px; color: var(--text2); }
+.drop-sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+.img-preview-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+}
+
+.img-preview-wrap img {
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 2px solid var(--border2);
+}
+
+.img-preview-info { flex: 1; font-size: 12px; color: var(--text2); }
+.img-clear-btn {
+  background: none;
+  border: 1px solid var(--border2);
+  color: var(--text3);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.img-clear-btn:hover { border-color: #ef4444; color: #ef4444; }
+
+/* ——— SOCIAL TOGGLES ——— */
+.social-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.social-item {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.social-item:hover { border-color: var(--border2); }
+.social-item.active {
+  border-color: var(--accent);
+  background: var(--accent-glow);
+}
+
+.social-toggle-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.social-icon-sm {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #ffffff;
+  outline: 2px solid #ffffff;
+}
+
+.social-name { font-size: 12px; font-weight: 600; color: var(--text2); }
+
+.social-toggle {
+  width: 32px;
+  height: 18px;
+  background: var(--border2);
+  border-radius: 9px;
+  position: relative;
+  margin-left: auto;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.social-item.active .social-toggle { background: var(--accent); }
+.social-toggle::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  background: white;
+  border-radius: 50%;
+  top: 2px;
+  left: 2px;
+  transition: left 0.2s;
+}
+.social-item.active .social-toggle::after { left: 16px; }
+
+.social-url {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 5px 8px;
+  color: var(--text);
+  font-size: 11px;
+  font-family: var(--font-body);
+  outline: none;
+}
+
+.social-url:focus { border-color: var(--accent); }
+
+/* ——— BUTTONS ——— */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 18px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: white;
+  box-shadow: 0 4px 15px rgba(59,130,246,0.3);
+}
+
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(59,130,246,0.4); }
+.btn-primary:active { transform: translateY(0); }
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--text2);
+}
+.btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+.btn-success {
+  background: linear-gradient(135deg, #059669, #22c55e);
+  color: white;
+  box-shadow: 0 4px 15px rgba(34,197,94,0.25);
+}
+.btn-success:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(34,197,94,0.35); }
+
+.btn-danger {
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: #ef4444;
+}
+.btn-danger:hover { background: rgba(239,68,68,0.1); border-color: #ef4444; }
+
+.btn-lg { padding: 13px 24px; font-size: 14px; }
+
+.action-bar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.action-bar-full { grid-column: 1 / -1; }
+
+/* ——— PREVIEW PANEL ——— */
+.preview-panel {
+  padding: 0 0 0 24px;
+}
+
+.preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.preview-title {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text);
+}
+
+.preview-subtitle {
+  font-size: 12px;
+  color: var(--text3);
+  margin-top: 2px;
+}
+
+/* ——— OUTLOOK MOCKUP ——— */
+.outlook-mockup {
+  background: #1e1f23;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  margin-bottom: 20px;
+}
+
+.outlook-topbar {
+  background: #1a73c6;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.outlook-logo {
+  background: white;
+  color: #1a73c6;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 3px;
+  letter-spacing: -0.5px;
+}
+
+.outlook-topbar-text { color: rgba(255,255,255,0.8); font-size: 12px; }
+
+.outlook-ribbon {
+  background: #f3f2f1;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid #ddd;
+}
+
+.ribbon-btn {
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  padding: 3px 10px;
+  font-size: 11px;
+  color: #333;
+  cursor: default;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.outlook-compose {
+  background: white;
+  padding: 0;
+}
+
+.compose-field {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-bottom: 1px solid #eee;
+  font-size: 12px;
+}
+
+.compose-field-label {
+  color: #666;
+  width: 50px;
+  font-family: Calibri, sans-serif;
+  font-size: 13px;
+}
+
+.compose-field-value {
+  color: #0a0a0a;
+  font-family: Calibri, sans-serif;
+  font-size: 13px;
+}
+
+.compose-body {
+  padding: 16px;
+  min-height: 80px;
+}
+
+.compose-body-text {
+  font-family: Calibri, sans-serif;
+  font-size: 13px;
+  color: #222;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.compose-divider {
+  border-top: 1px solid #ddd;
+  margin-bottom: 12px;
+}
+
+/* ——— SIGNATURE LIVE PREVIEW ——— */
+#sig-live-preview {
+  /* reset */
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* ——— CODE OUTPUT ——— */
+.code-panel {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.code-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(26,29,38,0.7);
+}
+
+.code-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text2);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.code-body {
+  background: #0d0e12;
+  padding: 16px;
+  max-height: 280px;
+  overflow: auto;
+}
+
+.code-body::-webkit-scrollbar { width: 6px; height: 6px; }
+.code-body::-webkit-scrollbar-track { background: transparent; }
+.code-body::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+.code-body pre {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: #8b93b3;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* ——— TOAST ——— */
+.toast {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  background: var(--bg3);
+  border: 1px solid var(--success);
+  color: var(--success);
+  padding: 14px 20px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  z-index: 9999;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  transform: translateY(80px);
+  opacity: 0;
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toast.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* ——— VALIDATION ERRORS ——— */
+.field.error input {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239,68,68,0.1);
+}
+
+.error-msg {
+  font-size: 10px;
+  color: #ef4444;
+  margin-top: 3px;
+  display: none;
+}
+
+.field.error .error-msg { display: block; }
+
+/* ——— RESPONSIVE ——— */
+@media (max-width: 900px) {
+  .app-layout {
+    grid-template-columns: 1fr;
+    padding: 0 16px 40px;
+  }
+  .panel { position: static; }
+  .preview-panel { padding: 24px 0 0; }
+  .header { padding: 16px 20px; }
+  .hero { padding: 40px 20px 24px; }
+}
+
+/* ——— ANIMATIONS ——— */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.panel, .preview-panel { animation: fadeInUp 0.5s ease both; }
+.preview-panel { animation-delay: 0.1s; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="logo">
+    <div class="logo-icon">✍️</div>
+    Signature<span>Craft</span>
+  </div>
+  <div class="header-actions">
+    <span class="badge">Outlook Ready</span>
+    <button class="btn btn-outline" onclick="resetForm()">↺ Reset</button>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <h1>Crea tu firma<br><em>profesional</em> en minutos</h1>
+  <p>Compatible con Outlook 365, Desktop y Gmail. Genera HTML optimizado listo para copiar.</p>
+  <div class="template-pills">
+    <div class="pill active" onclick="loadTemplate('corporate', this)">Corporativo</div>
+    <div class="pill" onclick="loadTemplate('minimal', this)">Minimal</div>
+    <div class="pill" onclick="loadTemplate('bold', this)">Bold Blue</div>
+    <div class="pill" onclick="loadTemplate('dark', this)">Dark Pro</div>
+  </div>
+</section>
+
+<!-- MAIN APP -->
+<main class="app-layout">
+
+  <!-- ====== LEFT PANEL ====== -->
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">⚙ Configuración</span>
+      <button class="btn btn-outline" style="padding:5px 12px;font-size:11px;" onclick="resetForm()">Reset</button>
+    </div>
+    <div class="panel-body">
+
+      <!-- PHOTO / LOGO -->
+      <div class="section">
+        <div class="section-label">📸 Foto / Logo</div>
+        <div id="drop-zone" class="drop-zone" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+          <input type="file" id="photo-input" accept="image/*" onchange="handleImageUpload(event)">
+          <div class="drop-icon">📷</div>
+          <div class="drop-text">Arrastra tu foto o logo aquí</div>
+          <div class="drop-sub">PNG, JPG, WebP — se redimensiona automáticamente</div>
+        </div>
+        <div id="img-preview" style="display:none; margin-top:10px;" class="img-preview-wrap">
+          <img id="preview-img" src="" alt="Preview">
+          <div class="img-preview-info">
+            <div id="img-name" style="font-weight:600;color:var(--text);">imagen.png</div>
+            <div id="img-size" style="color:var(--text3);">0 KB</div>
+          </div>
+          <button class="img-clear-btn" onclick="clearImage()">✕ Quitar</button>
+        </div>
+        <div style="margin-top:10px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:10px 12px;">
+          <div style="font-size:11px;color:var(--accent);font-weight:600;margin-bottom:4px;">⚡ Optimización automática</div>
+          <div style="font-size:11px;color:var(--text2);line-height:1.6;">La imagen se redimensiona a <strong>130px de alto</strong> manteniendo proporciones. Así se ve completa en Outlook sin recortes.</div>
+          <div id="img-dims-info" style="font-size:10px;color:var(--text3);margin-top:4px;font-family:monospace;"></div>
+        </div>
+        <div class="field" style="margin-top:10px;">
+          <label>Forma de imagen</label>
+          <select id="img-shape" onchange="updatePreview()">
+            <option value="0px">Rectangular (recomendado)</option>
+            <option value="8px">Bordes redondeados</option>
+            <option value="50%">Circular</option>
+          </select>
+        </div>
+        <!-- Hidden but kept for backward compat -->
+        <input type="hidden" id="img-size-sel" value="100">
+      </div>
+
+      <!-- INFORMACIÓN PERSONAL -->
+      <div class="section">
+        <div class="section-label">👤 Información personal</div>
+        <div class="field" id="f-nombre">
+          <label>Nombre completo *</label>
+          <input type="text" id="nombre" placeholder="Ej: Marilyn Barboza" oninput="updatePreview(); validateField('nombre')">
+          <div class="error-msg">El nombre es requerido</div>
+        </div>
+        <div class="field">
+          <label>Cargo / Puesto</label>
+          <input type="text" id="cargo" placeholder="Ej: Administración y operaciones" oninput="updatePreview()">
+        </div>
+        <div class="field">
+          <label>Empresa</label>
+          <input type="text" id="empresa" placeholder="Ej: Provisiones Tecnológicas" oninput="updatePreview()">
+        </div>
+      </div>
+
+      <!-- CONTACTO -->
+      <div class="section">
+        <div class="section-label">📞 Contacto</div>
+        <div class="field">
+          <label>Teléfono / WhatsApp</label>
+          <input type="text" id="telefono" placeholder="+51 991 028 680" oninput="updatePreview()">
+        </div>
+        <div class="field" id="f-email">
+          <label>Correo electrónico</label>
+          <input type="email" id="email" placeholder="nombre@empresa.com" oninput="updatePreview(); validateEmail()">
+          <div class="error-msg">Ingresa un email válido</div>
+        </div>
+        <div class="field">
+          <label>Sitio web</label>
+          <input type="text" id="website" placeholder="www.empresa.com" oninput="updatePreview()">
+        </div>
+        <div class="field">
+          <label>Dirección / Sedes</label>
+          <input type="text" id="direccion" placeholder="Ej: Lima | Piura | Trujillo" oninput="updatePreview()">
+        </div>
+      </div>
+
+      <!-- COLORES CORPORATIVOS -->
+      <div class="section">
+        <div class="section-label">🎨 Colores corporativos</div>
+        <div class="color-row">
+          <div class="color-field">
+            <input type="color" id="color-primary" value="#1a56db" oninput="updateColorHex('primary'); updatePreview()">
+            <div>
+              <div class="color-label">Principal</div>
+              <div class="color-hex" id="hex-primary">#1a56db</div>
+            </div>
+          </div>
+          <div class="color-field">
+            <input type="color" id="color-accent" value="#0ea5e9" oninput="updateColorHex('accent'); updatePreview()">
+            <div>
+              <div class="color-label">Acento</div>
+              <div class="color-hex" id="hex-accent">#0ea5e9</div>
+            </div>
+          </div>
+          <div class="color-field">
+            <input type="color" id="color-bg" value="#132048" oninput="updateColorHex('bg'); updatePreview()">
+            <div>
+              <div class="color-label">Fondo banner</div>
+              <div class="color-hex" id="hex-bg">#132048</div>
+            </div>
+          </div>
+          <div class="color-field">
+            <input type="color" id="color-text" value="#333333" oninput="updateColorHex('text'); updatePreview()">
+            <div>
+              <div class="color-label">Texto</div>
+              <div class="color-hex" id="hex-text">#333333</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- REDES SOCIALES -->
+      <div class="section">
+        <div class="section-label">🔗 Redes sociales</div>
+        <div class="social-grid">
+          <div class="social-item active" id="soc-whatsapp" onclick="toggleSocial('whatsapp')">
+            <div class="social-toggle-head">
+              <img src="data:image/png;base64,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" class="social-icon-sm" alt="WhatsApp">
+              <span class="social-name">WhatsApp</span>
+              <div class="social-toggle"></div>
+            </div>
+            <input type="text" class="social-url" id="url-whatsapp" placeholder="+51 991 028 680" oninput="updatePreview()" onclick="event.stopPropagation()">
+          </div>
+          <div class="social-item active" id="soc-linkedin" onclick="toggleSocial('linkedin')">
+            <div class="social-toggle-head">
+              <img src="data:image/png;base64,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" class="social-icon-sm" alt="LinkedIn">
+              <span class="social-name">LinkedIn</span>
+              <div class="social-toggle"></div>
+            </div>
+            <input type="text" class="social-url" id="url-linkedin" placeholder="@empresa" oninput="updatePreview()" onclick="event.stopPropagation()">
+          </div>
+          <div class="social-item active" id="soc-youtube" onclick="toggleSocial('youtube')">
+            <div class="social-toggle-head">
+              <img src="data:image/png;base64,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" class="social-icon-sm" alt="YouTube">
+              <span class="social-name">YouTube</span>
+              <div class="social-toggle"></div>
+            </div>
+            <input type="text" class="social-url" id="url-youtube" placeholder="@canal" oninput="updatePreview()" onclick="event.stopPropagation()">
+          </div>
+          <div class="social-item active" id="soc-facebook" onclick="toggleSocial('facebook')">
+            <div class="social-toggle-head">
+              <img src="data:image/png;base64,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" class="social-icon-sm" alt="Facebook">
+              <span class="social-name">Facebook</span>
+              <div class="social-toggle"></div>
+            </div>
+            <input type="text" class="social-url" id="url-facebook" placeholder="/pagina" oninput="updatePreview()" onclick="event.stopPropagation()">
+          </div>
+          <div class="social-item active" id="soc-instagram" onclick="toggleSocial('instagram')">
+            <div class="social-toggle-head">
+              <img src="data:image/png;base64,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" class="social-icon-sm" alt="Instagram">
+              <span class="social-name">Instagram</span>
+              <div class="social-toggle"></div>
+            </div>
+            <input type="text" class="social-url" id="url-instagram" placeholder="@usuario" oninput="updatePreview()" onclick="event.stopPropagation()">
+          </div>
+          <div class="social-item" id="soc-twitter" onclick="toggleSocial('twitter')">
+            <div class="social-toggle-head">
+              <div style="width:22px;height:22px;background:#000;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;color:white;font-weight:800;">𝕏</div>
+              <span class="social-name">X / Twitter</span>
+              <div class="social-toggle"></div>
+            </div>
+            <input type="text" class="social-url" id="url-twitter" placeholder="@usuario" oninput="updatePreview()" onclick="event.stopPropagation()">
+          </div>
+        </div>
+        <div class="field" style="margin-top:12px;">
+          <label>Texto "@usuario" para redes</label>
+          <input type="text" id="social-handle" placeholder="@provisionestecnologicas" oninput="updatePreview()">
+        </div>
+      </div>
+
+      <!-- ESTILO DE FIRMA -->
+      <div class="section">
+        <div class="section-label">✨ Estilo de firma</div>
+        <div class="field">
+          <label>Layout</label>
+          <select id="sig-layout" onchange="updatePreview()">
+            <option value="banner">Banner lateral (Provisiones style)</option>
+            <option value="classic">Clásico horizontal</option>
+            <option value="minimal">Minimal líneas</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Tipografía</label>
+          <select id="sig-font" onchange="updatePreview()">
+            <option value="Arial, sans-serif">Arial (Outlook seguro)</option>
+            <option value="Calibri, sans-serif">Calibri (Office)</option>
+            <option value="Trebuchet MS, sans-serif">Trebuchet MS</option>
+            <option value="Georgia, serif">Georgia (Clásico)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Separador</label>
+          <select id="sig-divider" onchange="updatePreview()">
+            <option value="none" selected>Sin separador</option>
+            <option value="line">Línea colorida</option>
+            <option value="gradient">Gradiente</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- ACTIONS -->
+      <div class="section">
+        <div class="section-label">📤 Exportar para</div>
+        <div class="template-pills" style="justify-content:flex-start;margin-bottom:14px;" id="export-target-pills">
+          <div class="pill active" id="target-outlook" onclick="setExportTarget('outlook', this)">Outlook</div>
+          <div class="pill" id="target-gmail" onclick="setExportTarget('gmail', this)">Gmail</div>
+        </div>
+        <div class="action-bar">
+          <button class="btn btn-success btn-lg action-bar-full" id="btn-copy-main" onclick="copySignatureHTML()">
+            📋 Copiar firma HTML para Outlook
+          </button>
+          <button class="btn btn-primary" onclick="downloadHTML()">
+            ⬇ Exportar .html
+          </button>
+          <button class="btn btn-outline" onclick="downloadHTMLRaw()">
+            📄 Solo código
+          </button>
+        </div>
+        <p style="font-size:11px;color:var(--text3);margin-top:10px;text-align:center;line-height:1.6;" id="install-hint">
+          Pegar en Outlook: <strong style="color:var(--text2);">Archivo → Opciones → Correo → Firmas</strong>
+        </p>
+        <div style="margin-top:10px;background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);border-radius:8px;padding:10px 12px;">
+          <div style="font-size:11px;color:#22c55e;font-weight:600;margin-bottom:3px;">📐 Tamaño real en correo</div>
+          <div style="font-size:11px;color:var(--text2);line-height:1.6;">La firma generada mide ~430–480px de ancho y ~130px de alto. Es el tamaño estándar corporativo, se verá correctamente en Gmail, Outlook Desktop, OWA y móviles.</div>
+        </div>
+        <div style="margin-top:8px;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:10px 12px;display:none;" id="gmail-photo-warning">
+          <div style="font-size:11px;color:#f59e0b;font-weight:600;margin-bottom:3px;">📷 Sobre la foto en Gmail</div>
+          <div style="font-size:11px;color:var(--text2);line-height:1.6;">Usa el botón "Copiar firma HTML" (no "Solo código") y pégala directamente en el cuadro de firma de Gmail — así la foto se sube automáticamente. Si pegas el código HTML crudo, la imagen no se mostrará.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ====== RIGHT: PREVIEW ====== -->
+  <div class="preview-panel">
+    <div class="preview-header">
+      <div>
+        <div class="preview-title">Vista previa en tiempo real</div>
+        <div class="preview-subtitle">Simulación de Outlook Desktop</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-outline" style="font-size:11px;padding:6px 12px;" onclick="copySignatureHTML()">📋 Copiar HTML</button>
+        <button class="btn btn-outline" style="font-size:11px;padding:6px 12px;" onclick="downloadHTML()">⬇ Exportar</button>
+      </div>
+    </div>
+
+    <!-- Outlook mockup -->
+    <div class="outlook-mockup">
+      <div class="outlook-topbar">
+        <div class="outlook-logo">Outlook</div>
+        <span class="outlook-topbar-text">Nuevo mensaje</span>
+      </div>
+      <div class="outlook-ribbon">
+        <div class="ribbon-btn">Enviar</div>
+        <div class="ribbon-btn">Adjuntar</div>
+        <div class="ribbon-btn">Firma ▾</div>
+        <div class="ribbon-btn">Fuente ▾</div>
+      </div>
+      <div class="outlook-compose">
+        <div class="compose-field">
+          <span class="compose-field-label">Para:</span>
+          <span class="compose-field-value">cliente@empresa.com</span>
+        </div>
+        <div class="compose-field">
+          <span class="compose-field-label">Asunto:</span>
+          <span class="compose-field-value">Propuesta de servicios tecnológicos</span>
+        </div>
+        <div class="compose-body">
+          <div class="compose-body-text">Estimado cliente,<br><br>Adjunto la propuesta que conversamos. Quedo a su disposición.<br><br>Saludos cordiales,</div>
+          <div class="compose-divider"></div>
+          <!-- LIVE PREVIEW -->
+          <div id="sig-live-preview"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CODE PANEL -->
+    <div class="code-panel">
+      <div class="code-header">
+        <span class="code-title">🔧 Código HTML generado</span>
+        <button class="btn btn-outline" style="font-size:11px;padding:5px 12px;" onclick="copyCode()">📋 Copiar código</button>
+      </div>
+      <div class="code-body">
+        <pre id="html-output">El código aparecerá aquí...</pre>
+      </div>
+    </div>
+
+    <!-- INSTRUCTIONS -->
+    <div style="margin-top:20px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;">
+      <div style="font-size:12px;font-weight:700;color:var(--text2);letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;">📌 Instrucciones de instalación</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div style="background:var(--bg3);border-radius:8px;padding:14px;">
+          <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:6px;">Outlook Desktop</div>
+          <ol style="font-size:11px;color:var(--text2);padding-left:16px;line-height:1.8;">
+            <li>Archivo → Opciones</li>
+            <li>Correo → Firmas</li>
+            <li>Nueva firma → pegar HTML</li>
+            <li>Guardar y aplicar</li>
+          </ol>
+        </div>
+        <div style="background:var(--bg3);border-radius:8px;padding:14px;">
+          <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:6px;">Outlook Web (OWA)</div>
+          <ol style="font-size:11px;color:var(--text2);padding-left:16px;line-height:1.8;">
+            <li>⚙ Configuración → Correo</li>
+            <li>Redactar y responder</li>
+            <li>Pegar en campo Firma</li>
+            <li>Guardar</li>
+          </ol>
+        </div>
+        <div style="background:var(--bg3);border-radius:8px;padding:14px;">
+          <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:6px;">Gmail</div>
+          <ol style="font-size:11px;color:var(--text2);padding-left:16px;line-height:1.8;">
+            <li>⚙ Configuración → Ver toda la config.</li>
+            <li>General → Firma → Crear nueva</li>
+            <li>Pegar (Ctrl/Cmd+V) firma copiada</li>
+            <li>Guardar cambios</li>
+          </ol>
+        </div>
+        <div style="background:var(--bg3);border-radius:8px;padding:14px;">
+          <div style="font-size:12px;font-weight:700;color:var(--accent);margin-bottom:6px;">Gmail (móvil)</div>
+          <ol style="font-size:11px;color:var(--text2);padding-left:16px;line-height:1.8;">
+            <li>Firma solo texto en la app móvil</li>
+            <li>Se recomienda crearla desde Gmail web</li>
+            <li>Se sincroniza automáticamente</li>
+            <li>Verifica la vista previa al enviar</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /preview-panel -->
+</main>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span>✅</span>
+  <span id="toast-msg">¡Copiado!</span>
+</div>
+
+<script>
+// =============================================
+//  SIGNATURECRAFT — JAVASCRIPT ENGINE
+// =============================================
+
+// ——— ICON DATA ———
+const ICONS = {
+  whatsapp: 'data:image/png;base64,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',
+  email: 'data:image/png;base64,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',
+  location: 'data:image/png;base64,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',
+  website: 'data:image/png;base64,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',
+  linkedin: 'data:image/png;base64,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',
+  youtube: 'data:image/png;base64,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',
+  facebook: 'data:image/png;base64,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',
+  instagram: 'data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAArACwDASIAAhEBAxEB/8QAHAAAAgICAwAAAAAAAAAAAAAABwgBBQADAgQG/8QANRAAAQMDAgMGBAMJAAAAAAAAAQIDBAUGEQAhBzFBEhNRYXGBFCKR0TKhsRUkQkNSZHKSwf/EABgBAQEBAQEAAAAAAAAAAAAAAAUGBAID/8QALBEAAQIFAgUBCQAAAAAAAAAAAQIDAAQFESESMTJRYaHRcQYTIiOBscHh8P/aAAwDAQACEQMRAD8AT2k0+XVJzcKEyXXnDsByA8T4DRTt7h1TYTaXKkPjZGNwdm0nyHX31acIbaTT7dbqTzf71OAcyRulv+Ee4399G6xrNob9uzLsuyXJYpMZ0MtMxgO8kOeA8Bqtp0gxLMh+YF1HYb77Y5xLztSceeLLBsBufTfPKBG3RKa0gIbp8VCR0S0kD9NdGp2fQ6ggpep7Laj/ADGk9hQ88jn76PLb/ClRUI9k12WAN1fHOZT/AK/91aUi0OH91QGv2bTK7Q1yXSxGmvO96wp8DPdqz9vHfSrs2xps60dPUDzGFsOlXy3QT0J8Qk96WXMoA+KZUqTBJx3mPmR5K++vKaa2v0BUaVNo1SYSpTa1MPII2PTS03jRl0G45dMVkobVlonqg7p/Lb1GpmsU5EuQ6zwnt+ocpVSMzdpziENHSoaGqZFabThCGUJSPAADRGlxwvgfSGfwhVYdyfc6G/DGpNXBY1MnoV2nAyGnh1DiPlVn1Iz6EaMdvU1Vy8NV2/BW2alBmGS2ypYSXEK54zph6YSW21jYEHtEZLFYfdZPFZQtzIIx2ib4uCoWLIp9v2yxFiQ2ojbqnlMJUZKlc1EnpqboBNesursNGnrqa2pUmEg4bDuQO2E9MjVnTDfUanMQKlZ7NYTF2juSWsqbA5DPUa1QaDddZvONcF0MphRIagtancIQ2hO4SkeusCVoRk2wDc3uVX/vEKqcccNkhWSLApICbHOdumPUwPOKkYDiNXsDYyyfqkHS6cbqZHdu1hbiFdowkZwcZ+demUu59uq3RUqi0D3ciQpac+HIfppSuONbRVOIMpMR0lmEhMVKknZRSSVfRSiPbXdQdCZNKFb4+0edFUqYqLimzj4jf64jnwb4guWXVlMTEqepEtQ+IQndTauXeJHXbmOo9NNbb9Rg1WEzVKLPQ+ysZQ8w5uPLI3B8tInq1ty467bskyKJVZUFZ/EGl4Sv/JPJXuNDys+pkaFZEL1n2dTPK980rSvsfHrD4ipVsDArNSAH92599aZcioS0diXPlyE/0uvqWPzOgfad/XbOoEaTKq3eOrT8yvh2hn6J0NuJnEO9JlVl0p24JSIaVFPdshLOR4EoAJHqdb1T7aBqCYlJegz0w6WS4Mb5J/EFTjTxQp9vwn6JQZLcmsOJKHHG1BSYoPPJ5Ffl066WValLUVKUVKJySTkk6g7nJ1miJiZW+q6ovaXS2qc1obyTuecf/9k=',
+};
+
+// ——— STATE ———
+let state = {
+  photo: null,
+  photoWidth: 100,
+  photoShape: '8px',
+  nombre: 'Marilyn Barboza',
+  cargo: 'Administración y operaciones',
+  empresa: 'Provisiones Tecnológicas',
+  telefono: '+51 991 028 680',
+  email: 'mbarboza@provisionestecnologicas.pe',
+  website: 'www.provisionestecnologicas.pe',
+  direccion: 'Lima | Piura | Trujillo',
+  colorPrimary: '#1a56db',
+  colorAccent: '#0ea5e9',
+  colorBg: '#132048',
+  colorText: '#333333',
+  socials: {
+    whatsapp:  { active: true,  url: '+51 991 028 680' },
+    linkedin:  { active: true,  url: '' },
+    youtube:   { active: true,  url: '' },
+    facebook:  { active: true,  url: '' },
+    instagram: { active: true,  url: '' },
+    twitter:   { active: false, url: '' },
+  },
+  socialHandle: '@provisionestecnologicas',
+  layout: 'banner',
+  font: 'Arial, sans-serif',
+  divider: 'line',
+  exportTarget: 'outlook', // 'outlook' | 'gmail'
+};
+
+// ——— INIT ———
+document.addEventListener('DOMContentLoaded', () => {
+  populateForm();
+  updatePreview();
+  // Replace placeholder srcs in social items
+  document.querySelector('#soc-whatsapp img').src  = ICONS.whatsapp;
+  document.querySelector('#soc-linkedin img').src  = ICONS.linkedin;
+  document.querySelector('#soc-youtube img').src   = ICONS.youtube;
+  document.querySelector('#soc-facebook img').src  = ICONS.facebook;
+  document.querySelector('#soc-instagram img').src = ICONS.instagram;
+  // Note: email/location/website icons used in signature only, not in social toggles
+});
+
+// ——— POPULATE FORM FROM STATE ———
+function populateForm() {
+  document.getElementById('nombre').value   = state.nombre;
+  document.getElementById('cargo').value    = state.cargo;
+  document.getElementById('empresa').value  = state.empresa;
+  document.getElementById('telefono').value = state.telefono;
+  document.getElementById('email').value    = state.email;
+  document.getElementById('website').value  = state.website;
+  document.getElementById('direccion').value= state.direccion;
+  document.getElementById('color-primary').value = state.colorPrimary;
+  document.getElementById('color-accent').value  = state.colorAccent;
+  document.getElementById('color-bg').value      = state.colorBg;
+  document.getElementById('color-text').value    = state.colorText;
+  document.getElementById('hex-primary').textContent = state.colorPrimary;
+  document.getElementById('hex-accent').textContent  = state.colorAccent;
+  document.getElementById('hex-bg').textContent      = state.colorBg;
+  document.getElementById('hex-text').textContent    = state.colorText;
+  document.getElementById('social-handle').value = state.socialHandle;
+  for (const [k, v] of Object.entries(state.socials)) {
+    const el = document.getElementById('url-' + k);
+    if (el) el.value = v.url;
+    const item = document.getElementById('soc-' + k);
+    if (item) {
+      if (v.active) item.classList.add('active');
+      else item.classList.remove('active');
+    }
+  }
+}
+
+// ——— READ FORM INTO STATE ———
+function readForm() {
+  state.nombre   = document.getElementById('nombre').value.trim();
+  state.cargo    = document.getElementById('cargo').value.trim();
+  state.empresa  = document.getElementById('empresa').value.trim();
+  state.telefono = document.getElementById('telefono').value.trim();
+  state.email    = document.getElementById('email').value.trim();
+  state.website  = document.getElementById('website').value.trim();
+  state.direccion= document.getElementById('direccion').value.trim();
+  state.colorPrimary = document.getElementById('color-primary').value;
+  state.colorAccent  = document.getElementById('color-accent').value;
+  state.colorBg      = document.getElementById('color-bg').value;
+  state.colorText    = document.getElementById('color-text').value;
+  state.socialHandle = document.getElementById('social-handle').value.trim();
+  state.layout   = document.getElementById('sig-layout').value;
+  state.font     = document.getElementById('sig-font').value;
+  state.divider  = document.getElementById('sig-divider').value;
+  state.photoWidth = parseInt(document.getElementById('img-size-sel').value);
+  state.photoShape = document.getElementById('img-shape').value;
+  for (const k of Object.keys(state.socials)) {
+    const el = document.getElementById('url-' + k);
+    if (el) state.socials[k].url = el.value.trim();
+  }
+}
+
+// ——— VALIDATION ———
+function validateField(id) {
+  const wrap = document.getElementById('f-' + id);
+  const val = document.getElementById(id).value.trim();
+  if (!val) wrap && wrap.classList.add('error');
+  else wrap && wrap.classList.remove('error');
+}
+
+function validateEmail() {
+  const wrap = document.getElementById('f-email');
+  const val = document.getElementById('email').value.trim();
+  const ok = !val || /^[^@]+@[^@]+\.[^@]+$/.test(val);
+  if (!ok) wrap && wrap.classList.add('error');
+  else wrap && wrap.classList.remove('error');
+}
+
+// ——— COLOR HEX DISPLAY ———
+function updateColorHex(name) {
+  const val = document.getElementById('color-' + name).value;
+  document.getElementById('hex-' + name).textContent = val;
+}
+
+// ——— SOCIAL TOGGLE ———
+function toggleSocial(name) {
+  state.socials[name].active = !state.socials[name].active;
+  const item = document.getElementById('soc-' + name);
+  item.classList.toggle('active', state.socials[name].active);
+  updatePreview();
+}
+
+// ——— IMAGE HANDLING ———
+function handleImageUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  processImage(file);
+}
+
+function processImage(file) {
+  if (file.size > 10 * 1024 * 1024) { showToast('⚠️ Imagen muy grande (máx 10MB)', '#f59e0b'); return; }
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const img = new Image();
+    img.onload = () => {
+      // DISPLAY dimensions at 150px height (how it renders in signature)
+      const DISPLAY_H = 150;
+      const ratio = img.naturalWidth / img.naturalHeight;
+      const displayW = Math.round(DISPLAY_H * ratio);
+      const displayH = DISPLAY_H;
+
+      // CANVAS at 2x for crisp rendering (retina / high-DPI screens + Outlook zoom)
+      const canvasW = displayW * 2;
+      const canvasH = displayH * 2;
+      const canvas = document.createElement('canvas');
+      canvas.width  = canvasW;
+      canvas.height = canvasH;
+      const ctx = canvas.getContext('2d');
+      // Enable best image smoothing quality
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.clearRect(0, 0, canvasW, canvasH);
+      ctx.drawImage(img, 0, 0, canvasW, canvasH);
+
+      // High quality encoding: JPEG 0.95 for photos, PNG for logos/transparency
+      const hasTransparency = file.type === 'image/png' || file.type === 'image/webp';
+      const mimeOut = hasTransparency ? 'image/png' : 'image/jpeg';
+      const quality = hasTransparency ? 1 : 0.95;
+      const encoded = canvas.toDataURL(mimeOut, quality);
+
+      // Store both the encoded data and the DISPLAY dimensions
+      // The HTML img tag uses displayW/displayH — Outlook scales correctly
+      state.photo        = encoded;
+      state.photoNaturalW = displayW;   // display width  (e.g. 112px)
+      state.photoNaturalH = displayH;   // display height (150px always)
+
+      document.getElementById('drop-zone').style.display = 'none';
+      document.getElementById('img-preview').style.display = 'flex';
+      document.getElementById('preview-img').src = encoded;
+      document.getElementById('img-name').textContent = file.name;
+      const kb = Math.round(encoded.length * 0.75 / 1024);
+      document.getElementById('img-size').textContent = `${displayW}×${displayH}px · ~${kb}KB`;
+      const dimsEl = document.getElementById('img-dims-info');
+      if (dimsEl) dimsEl.textContent = `Original: ${img.naturalWidth}×${img.naturalHeight}px → Renderizado: ${displayW}×${displayH}px @2x · ~${kb}KB`;
+      updatePreview();
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearImage() {
+  state.photo = null;
+  document.getElementById('photo-input').value = '';
+  document.getElementById('drop-zone').style.display = 'block';
+  document.getElementById('img-preview').style.display = 'none';
+  updatePreview();
+}
+
+function handleDragOver(e) {
+  e.preventDefault();
+  document.getElementById('drop-zone').classList.add('dragover');
+}
+
+function handleDragLeave() {
+  document.getElementById('drop-zone').classList.remove('dragover');
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('drop-zone').classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) processImage(file);
+}
+
+// ======================================================
+//  SIGNATURE HTML GENERATOR (Outlook-safe TABLE layout)
+// ======================================================
+function generateSignatureHTML() {
+  readForm();
+  const S = state;
+  const font = S.font;
+  const primary = S.colorPrimary;
+  const accent  = S.colorAccent;
+  const bgColor = S.colorBg;
+  const textColor = S.colorText;
+
+  const photoSrc = S.photo || '';
+  const photoSize = S.photoWidth;
+  const photoShape = S.photoShape;
+
+  // Build divider
+  let dividerHtml = '';
+  if (S.divider === 'line') {
+    dividerHtml = `<tr><td colspan="2" style="padding:0;"><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="height:3px;background:${primary};font-size:0;line-height:0;">&nbsp;</td></tr></table></td></tr>`;
+  } else if (S.divider === 'gradient') {
+    dividerHtml = `<tr><td colspan="2" style="padding:0;"><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="height:3px;background:linear-gradient(90deg,${primary},${accent});font-size:0;line-height:0;">&nbsp;</td></tr></table></td></tr>`;
+  }
+
+  // Social icons row
+  // Bottom social row: linkedin, youtube, facebook, instagram, twitter (whatsapp shown in info rows above)
+  const socialOrder = ['linkedin','youtube','facebook','instagram','twitter'];
+  let socialCells = '';
+  const socialUrls = {
+    whatsapp:  S.socials.whatsapp.url  ? 'https://wa.me/' + S.socials.whatsapp.url.replace(/[^0-9]/g,'') : '#',
+    linkedin:  S.socials.linkedin.url  || 'https://linkedin.com',
+    youtube:   S.socials.youtube.url   || 'https://youtube.com',
+    facebook:  S.socials.facebook.url  || 'https://facebook.com',
+    instagram: S.socials.instagram.url || 'https://instagram.com',
+    twitter:   S.socials.twitter.url   || 'https://x.com',
+  };
+  for (const soc of socialOrder) {
+    if (!S.socials[soc] || !S.socials[soc].active) continue;
+    const iconSrc = ICONS[soc] || '';
+    const url = socialUrls[soc];
+    if (iconSrc) {
+      socialCells += `<td style="padding:0 5px 0 0;vertical-align:middle;">
+        <a href="${url}" target="_blank" style="text-decoration:none;display:block;width:26px;height:26px;line-height:0;border-radius:50%;overflow:hidden;background:#ffffff;">
+          <img src="${iconSrc}" width="26" height="26" alt="${soc}" style="display:block;border:0;" border="0">
+        </a>
+      </td>`;
+    } else {
+      socialCells += `<td style="padding:0 5px 0 0;vertical-align:middle;">
+        <a href="${url}" target="_blank" style="width:26px;height:26px;display:inline-block;background:#1d1d1d;border-radius:50%;border:2px solid #ffffff;text-align:center;line-height:22px;color:white;text-decoration:none;font-size:11px;font-family:${font};font-weight:900;">𝕏</a>
+      </td>`;
+    }
+  }
+
+  // Handle row
+  const handleHtml = S.socialHandle
+    ? `<td style="padding:0 0 0 8px;vertical-align:middle;"><span style="font-family:${font};font-size:11px;color:#888;">${escHtml(S.socialHandle)}</span></td>`
+    : '';
+
+  const socialsRow = socialCells
+    ? `<tr><td style="padding-top:8px;">
+        <table cellpadding="0" cellspacing="0" border="0">
+          <tr>${socialCells}${handleHtml}</tr>
+        </table>
+      </td></tr>`
+    : '';
+
+  // Info rows builder
+  function infoRow(iconSrc, iconType, href, text) {
+    if (!text) return '';
+    const linkStart = href ? `<a href="${href}" style="text-decoration:none;color:${textColor};">` : '';
+    const linkEnd   = href ? '</a>' : '';
+    return `<tr>
+      <td style="padding:3px 0;vertical-align:middle;">
+        <table cellpadding="0" cellspacing="0" border="0">
+          <tr>
+            <td style="vertical-align:middle;padding-right:7px;">
+              <img src="${iconSrc}" width="22" height="22" alt="${iconType}" style="display:block;border:0;background:#ffffff;outline:2px solid #ffffff;border-radius:50%;" border="0">
+            </td>
+            <td style="vertical-align:middle;">
+              ${linkStart}<span style="font-family:${font};font-size:12px;color:${textColor};line-height:1.5;">${escHtml(text)}</span>${linkEnd}
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>`;
+  }
+
+  const websiteDisplay = S.website.replace(/^https?:\/\//,'');
+  const websiteHref = S.website ? (S.website.startsWith('http') ? S.website : 'https://' + S.website) : '';
+
+  // WhatsApp link: wa.me format for clickable link
+  const waHref = S.telefono ? 'https://wa.me/' + S.telefono.replace(/[^0-9]/g,'') : '';
+  const infoRows =
+    infoRow(ICONS.whatsapp, 'whatsapp', waHref,                                    S.telefono) +
+    infoRow(ICONS.email,    'email',    S.email ? 'mailto:' + S.email : '',        S.email) +
+    infoRow(ICONS.location, 'location', '',                                         S.direccion) +
+    infoRow(ICONS.website,  'website',  websiteHref,                                websiteDisplay);
+
+  let html = '';
+
+  if (S.layout === 'banner') {
+    // ============================================
+    //  BANNER LAYOUT — Replicates Provisiones style
+    //  Left: dark panel with photo + branding
+    //  Right: name, title, contact info
+    // ============================================
+
+    // Use actual resized dimensions so image is NEVER cropped in Outlook
+    const imgW = S.photoNaturalW || 110;
+    const imgH = S.photoNaturalH || 150;
+    const leftColW = Math.max(imgW, 90);
+    const photoCell = photoSrc
+      ? `<img src="${photoSrc}" width="${imgW}" height="${imgH}" alt="${escHtml(S.nombre)}" 
+            style="display:block;border:0;width:${imgW}px;height:${imgH}px;" border="0">`
+      : `<table cellpadding="0" cellspacing="0" border="0" width="${leftColW}"><tr><td width="${leftColW}" height="${imgH}" style="width:${leftColW}px;height:${imgH}px;background:#dce4f0;text-align:center;vertical-align:middle;font-family:${font};font-size:36px;">👤</td></tr></table>`;
+
+    const sigTotalW = leftColW + 320;
+    html = `<!--[if mso]>
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${sigTotalW}">
+<tr><td>
+<![endif]-->
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="${sigTotalW}" style="border-collapse:collapse;font-family:${font};">
+  <tr>
+    <!-- LEFT: Full photo — no crop, real pixel dimensions, fills entire height -->
+    <td width="${leftColW}" height="${imgH}" style="padding:0;vertical-align:top;line-height:0;font-size:0;overflow:hidden;">
+      ${photoCell}
+    </td>
+    <!-- RIGHT: Contact info -->
+    <td style="vertical-align:top;padding:12px 16px 12px 16px;background-color:#ffffff;">
+      <table cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td style="padding-bottom:4px;">
+            <span style="font-family:${font};font-size:17px;font-weight:700;color:${primary};letter-spacing:-0.3px;">${escHtml(S.nombre || 'Tu Nombre')}</span>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-bottom:10px;">
+            <span style="font-family:${font};font-size:12px;font-style:italic;color:#555;">${escHtml(S.cargo)}</span>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <table cellpadding="0" cellspacing="0" border="0">
+              ${infoRows}
+            </table>
+          </td>
+        </tr>
+        ${socialsRow}
+      </table>
+    </td>
+  </tr>
+</table>
+<!--[if mso]>
+</td></tr></table>
+<![endif]-->`;
+
+  } else if (S.layout === 'classic') {
+    // ============================================
+    //  CLASSIC HORIZONTAL — Photo left, info right
+    // ============================================
+    const photoCell = photoSrc
+      ? `<td width="${photoSize + 20}" style="vertical-align:top;padding-right:16px;">
+          <img src="${photoSrc}" width="${photoSize}" height="${photoSize}" alt="${escHtml(S.nombre)}" 
+            style="display:block;border:0;border-radius:${photoShape};" border="0">
+         </td>`
+      : '';
+
+    html = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="500" style="border-collapse:collapse;max-width:500px;font-family:${font};">
+  <tr>
+    ${photoCell}
+    <td style="vertical-align:top;padding-left:16px;">
+      <table cellpadding="0" cellspacing="0" border="0">
+        <tr><td style="padding-bottom:2px;">
+          <span style="font-family:${font};font-size:16px;font-weight:700;color:${primary};">${escHtml(S.nombre || 'Tu Nombre')}</span>
+        </td></tr>
+        ${S.cargo ? `<tr><td style="padding-bottom:8px;"><span style="font-family:${font};font-size:12px;color:#777;font-style:italic;">${escHtml(S.cargo)}${S.empresa ? ' · <strong>' + escHtml(S.empresa) + '</strong>' : ''}</span></td></tr>` : ''}
+        <tr><td><table cellpadding="0" cellspacing="0" border="0">${infoRows}</table></td></tr>
+        ${socialsRow}
+      </table>
+    </td>
+  </tr>
+</table>`;
+
+  } else {
+    // ============================================
+    //  MINIMAL — Clean lines style
+    // ============================================
+    const photoCell = photoSrc
+      ? `<tr><td style="padding-bottom:10px;">
+          <img src="${photoSrc}" width="${photoSize}" height="${photoSize}" alt="${escHtml(S.nombre)}" 
+            style="display:block;border:0;border-radius:${photoShape};" border="0">
+         </td></tr>`
+      : '';
+
+    html = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="420" style="border-collapse:collapse;max-width:420px;font-family:${font};">
+  <tr><td style="padding-top:12px;">
+    <table cellpadding="0" cellspacing="0" border="0">
+      ${photoCell}
+      <tr><td style="padding-bottom:2px;">
+        <span style="font-family:${font};font-size:15px;font-weight:700;color:${primary};">${escHtml(S.nombre || 'Tu Nombre')}</span>
+      </td></tr>
+      ${S.cargo ? `<tr><td style="padding-bottom:10px;"><span style="font-family:${font};font-size:11px;color:${accent};font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">${escHtml(S.cargo)}</span></td></tr>` : ''}
+      <tr><td><table cellpadding="0" cellspacing="0" border="0">${infoRows}</table></td></tr>
+      ${socialsRow}
+    </table>
+  </td></tr>
+</table>`;
+  }
+
+  return html;
+}
+
+// ——— HTML ESCAPE ———
+function escHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ——— UPDATE LIVE PREVIEW ———
+function updatePreview() {
+  const html = generateSignatureHTML();
+  document.getElementById('sig-live-preview').innerHTML = html;
+  document.getElementById('html-output').textContent = html;
+}
+
+// ——— COPY SIGNATURE HTML (for direct paste into Outlook or Gmail) ———
+// NOTE: generateSignatureHTML() output is identical regardless of target —
+// it's already table-based + inline-styles, which is what both Outlook and
+// Gmail need. Only the copy/paste mechanics + messaging differ by target.
+async function copySignatureHTML() {
+  const html = generateSignatureHTML();
+  const target = state.exportTarget === 'gmail' ? 'Gmail' : 'Outlook';
+  try {
+    // Create a temporary DOM element to render the HTML
+    const container = document.createElement('div');
+    container.innerHTML = html;
+    container.style.position = 'fixed';
+    container.style.left = '-9999px';
+    container.style.top = '0';
+    container.style.background = 'white';
+    document.body.appendChild(container);
+
+    // Select the rendered content
+    const range = document.createRange();
+    range.selectNode(container);
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    // Copy as rich HTML (renders as an image, not raw code, on paste)
+    document.execCommand('copy');
+    selection.removeAllRanges();
+    document.body.removeChild(container);
+
+    showToast(`✅ ¡Firma copiada! Pega directamente en ${target}`);
+  } catch (err) {
+    // Fallback: copy the raw HTML code
+    try {
+      await navigator.clipboard.writeText(html);
+      showToast('📋 Código HTML copiado al portapapeles');
+    } catch (e2) {
+      showToast('⚠️ No se pudo copiar. Usa el botón de código', '#f59e0b');
+    }
+  }
+}
+
+// ——— EXPORT TARGET TOGGLE (Outlook / Gmail) ———
+function setExportTarget(target, el) {
+  state.exportTarget = target;
+  document.querySelectorAll('#export-target-pills .pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+
+  const mainBtn = document.getElementById('btn-copy-main');
+  const hint = document.getElementById('install-hint');
+  const gmailWarning = document.getElementById('gmail-photo-warning');
+
+  if (target === 'gmail') {
+    mainBtn.innerHTML = '📋 Copiar firma HTML para Gmail';
+    hint.innerHTML = 'Pegar en Gmail: <strong style="color:var(--text2);">Configuración → Ver toda la configuración → General → Firma</strong>';
+    gmailWarning.style.display = 'block';
+  } else {
+    mainBtn.innerHTML = '📋 Copiar firma HTML para Outlook';
+    hint.innerHTML = 'Pegar en Outlook: <strong style="color:var(--text2);">Archivo → Opciones → Correo → Firmas</strong>';
+    gmailWarning.style.display = 'none';
+  }
+}
+
+// ——— COPY CODE ———
+async function copyCode() {
+  const code = generateSignatureHTML();
+  try {
+    await navigator.clipboard.writeText(code);
+    showToast('📋 Código HTML copiado');
+  } catch (e) {
+    const el = document.getElementById('html-output');
+    const range = document.createRange();
+    range.selectNode(el);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    document.execCommand('copy');
+    window.getSelection().removeAllRanges();
+    showToast('📋 Código copiado');
+  }
+}
+
+// ——— DOWNLOAD HTML (full standalone file) ———
+function downloadHTML() {
+  const sig = generateSignatureHTML();
+  const isGmail = state.exportTarget === 'gmail';
+  const targetLabel = isGmail ? 'Gmail' : 'Outlook';
+  const filename = isGmail ? 'firma-gmail.html' : 'firma-outlook.html';
+  const full = `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<title>Firma Email (${targetLabel}) — ${escHtml(state.nombre)}</title>
+</head>
+<body style="margin:20px;font-family:Arial,sans-serif;background:#f5f5f5;">
+<div style="background:white;padding:20px;display:inline-block;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+${sig}
+</div>
+</body>
+</html>`;
+  const blob = new Blob([full], { type: 'text/html' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  showToast(`⬇ Descargando ${filename}`);
+}
+
+// ——— DOWNLOAD RAW CODE ———
+function downloadHTMLRaw() {
+  const sig = generateSignatureHTML();
+  const blob = new Blob([sig], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'firma-codigo.txt';
+  a.click();
+  showToast('📄 Código exportado');
+}
+
+// ——— TEMPLATES ———
+const templates = {
+  corporate: {
+    colorPrimary: '#1a56db', colorAccent: '#0ea5e9', colorBg: '#132048', colorText: '#333333',
+    layout: 'banner', font: 'Arial, sans-serif', divider: 'line',
+  },
+  minimal: {
+    colorPrimary: '#1a1a2e', colorAccent: '#e94560', colorBg: '#16213e', colorText: '#222222',
+    layout: 'minimal', font: 'Trebuchet MS, sans-serif', divider: 'line',
+  },
+  bold: {
+    colorPrimary: '#0052cc', colorAccent: '#00b8d9', colorBg: '#0052cc', colorText: '#172b4d',
+    layout: 'classic', font: 'Arial, sans-serif', divider: 'gradient',
+  },
+  dark: {
+    colorPrimary: '#6c63ff', colorAccent: '#a78bfa', colorBg: '#1e1e2e', colorText: '#2d2d2d',
+    layout: 'banner', font: 'Georgia, serif', divider: 'gradient',
+  },
+};
+
+function loadTemplate(name, el) {
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  const t = templates[name];
+  state.colorPrimary = t.colorPrimary;
+  state.colorAccent  = t.colorAccent;
+  state.colorBg      = t.colorBg;
+  state.colorText    = t.colorText;
+  state.layout = t.layout;
+  state.font   = t.font;
+  state.divider = t.divider;
+  document.getElementById('color-primary').value = t.colorPrimary;
+  document.getElementById('color-accent').value  = t.colorAccent;
+  document.getElementById('color-bg').value      = t.colorBg;
+  document.getElementById('color-text').value    = t.colorText;
+  document.getElementById('hex-primary').textContent = t.colorPrimary;
+  document.getElementById('hex-accent').textContent  = t.colorAccent;
+  document.getElementById('hex-bg').textContent      = t.colorBg;
+  document.getElementById('hex-text').textContent    = t.colorText;
+  document.getElementById('sig-layout').value  = t.layout;
+  document.getElementById('sig-font').value    = t.font;
+  document.getElementById('sig-divider').value = t.divider;
+  updatePreview();
+  showToast('🎨 Plantilla "' + name + '" aplicada');
+}
+
+// ——— RESET ———
+function resetForm() {
+  state.nombre = state.cargo = state.empresa = state.telefono =
+  state.email = state.website = state.direccion = state.socialHandle = '';
+  state.photo = null;
+  state.colorPrimary = '#1a56db';
+  state.colorAccent  = '#0ea5e9';
+  state.colorBg      = '#132048';
+  state.colorText    = '#333333';
+  for (const k of Object.keys(state.socials)) { state.socials[k].active = false; state.socials[k].url = ''; }
+  clearImage();
+  populateForm();
+  updatePreview();
+  showToast('↺ Formulario reseteado');
+}
+
+// ——— TOAST ———
+let toastTimer;
+function showToast(msg, color) {
+  const t = document.getElementById('toast');
+  const m = document.getElementById('toast-msg');
+  m.textContent = msg;
+  t.style.borderColor = color || 'var(--success)';
+  t.style.color = color || 'var(--success)';
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+}
+</script>
+</body>
+</html>
